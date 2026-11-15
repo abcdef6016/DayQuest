@@ -1,12 +1,975 @@
-<link rel="manifest" href="./manifest.json" />
-<meta name="theme-color" content="#0f172a" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="apple-touch-icon" href="./icon.svg" />
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    });
-  }
-</script>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DayQuest — ADHD Focus & Flow</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti for Reward Redemptions & Quest Completions -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row select-none">
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
+
+  <!-- SIDEBAR NAVIGATION (Desktop) -->
+  <aside class="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 p-4 shrink-0 justify-between">
+    <div>
+      <div class="flex items-center gap-3 px-2 py-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-amber-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <i data-lucide="zap" class="w-6 h-6 text-slate-950 fill-slate-950"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg bg-gradient-to-r from-emerald-400 to-amber-400 bg-clip-text text-transparent">DayQuest</h1>
+          <p class="text-xs text-slate-400">ADHD Focus & Flow</p>
+        </div>
+      </div>
+
+      <nav class="space-y-1.5" id="desktop-nav">
+        <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" data-tab="home">
+          <i data-lucide="home" class="w-5 h-5"></i> Home
+        </button>
+        <button onclick="switchTab('focus')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60" data-tab="focus">
+          <i data-lucide="timer" class="w-5 h-5"></i> Focus Ignition
+        </button>
+        <button onclick="switchTab('quests')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60" data-tab="quests">
+          <i data-lucide="check-square" class="w-5 h-5"></i> Quests & Spaces
+        </button>
+        <button onclick="switchTab('rewards')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60" data-tab="rewards">
+          <i data-lucide="gift" class="w-5 h-5"></i> Reward Vault
+        </button>
+        <button onclick="switchTab('workshop')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60" data-tab="workshop">
+          <i data-lucide="bot" class="w-5 h-5"></i> SparkBot Workshop
+        </button>
+        <button onclick="switchTab('insights')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60" data-tab="insights">
+          <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Insights & Backup
+        </button>
+      </nav>
+    </div>
+
+    <!-- Currency & Profile Widget -->
+    <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs text-slate-400 font-medium">Spark Coins</span>
+        <div class="flex items-center gap-1.5 text-amber-400 font-bold text-sm bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
+          <i data-lucide="coins" class="w-4 h-4"></i> <span id="user-coins">120</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-slate-400 font-medium">Level</span>
+        <span class="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">Lvl 3 Focus Adept</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 z-50 flex justify-around p-2">
+    <button onclick="switchTab('home')" class="mobile-nav-btn flex flex-col items-center p-2 text-emerald-400" data-tab="home">
+      <i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] mt-1 font-medium">Home</span>
+    </button>
+    <button onclick="switchTab('focus')" class="mobile-nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="focus">
+      <i data-lucide="timer" class="w-5 h-5"></i><span class="text-[10px] mt-1 font-medium">Focus</span>
+    </button>
+    <button onclick="switchTab('quests')" class="mobile-nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="quests">
+      <i data-lucide="check-square" class="w-5 h-5"></i><span class="text-[10px] mt-1 font-medium">Quests</span>
+    </button>
+    <button onclick="switchTab('rewards')" class="mobile-nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="rewards">
+      <i data-lucide="gift" class="w-5 h-5"></i><span class="text-[10px] mt-1 font-medium">Rewards</span>
+    </button>
+    <button onclick="switchTab('workshop')" class="mobile-nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="workshop">
+      <i data-lucide="bot" class="w-5 h-5"></i><span class="text-[10px] mt-1 font-medium">Bot</span>
+    </button>
+    <button onclick="switchTab('insights')" class="mobile-nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="insights">
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i><span class="text-[10px] mt-1 font-medium">Insights</span>
+    </button>
+  </nav>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 overflow-y-auto pb-24 md:pb-8 p-4 md:p-8 custom-scrollbar">
+    
+    <!-- TOP MOBILE HEADER -->
+    <header class="flex md:hidden items-center justify-between mb-6 pb-4 border-b border-slate-800">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-amber-500 flex items-center justify-center">
+          <i data-lucide="zap" class="w-4 h-4 text-slate-950 fill-slate-950"></i>
+        </div>
+        <span class="font-bold text-base bg-gradient-to-r from-emerald-400 to-amber-400 bg-clip-text text-transparent">DayQuest</span>
+      </div>
+      <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-amber-400 text-xs font-bold">
+        <i data-lucide="coins" class="w-3.5 h-3.5"></i> <span id="mobile-user-coins">120</span>
+      </div>
+    </header>
+
+    <!-- TAB 1: HOME -->
+    <section id="tab-home" class="tab-content space-y-6 max-w-3xl mx-auto">
+      <!-- Energy Selector & Quick Capture -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <h2 class="text-lg font-bold text-slate-100 mb-2">How is your energy right now?</h2>
+        <p class="text-xs text-slate-400 mb-4">Select your energy level to surface the lowest-friction task for you.</p>
+        <div class="grid grid-cols-3 gap-3 mb-5">
+          <button onclick="setEnergy('low')" id="btn-energy-low" class="energy-btn py-3 px-4 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800 text-center transition-all">
+            <span class="block text-amber-400 font-bold text-sm">⚡ Low</span>
+            <span class="text-[10px] text-slate-400">Spark (2-5m)</span>
+          </button>
+          <button onclick="setEnergy('medium')" id="btn-energy-med" class="energy-btn py-3 px-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-center transition-all">
+            <span class="block text-emerald-400 font-bold text-sm">🔥 Medium</span>
+            <span class="text-[10px] text-slate-400">Side Quest (15m)</span>
+          </button>
+          <button onclick="setEnergy('high')" id="btn-energy-high" class="energy-btn py-3 px-4 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800 text-center transition-all">
+            <span class="block text-cyan-400 font-bold text-sm">🚀 High</span>
+            <span class="text-[10px] text-slate-400">Boss Battle (45m+)</span>
+          </button>
+        </div>
+
+        <!-- Quick Capture Form -->
+        <form onsubmit="handleQuickCapture(event)" class="flex gap-2">
+          <input type="text" id="quick-input" placeholder="Quick capture: what's on your mind?" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-all" />
+          <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-xl text-sm transition-all flex items-center gap-1.5 shrink-0">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add
+          </button>
+        </form>
+      </div>
+
+      <!-- Return Portal Banner -->
+      <div id="return-portal-card" class="hidden bg-gradient-to-r from-cyan-950/60 to-slate-900 border border-cyan-500/30 rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm">
+            <i data-lucide="compass" class="w-4 h-4 animate-spin-slow"></i> Return Portal — Pick Up Where You Left Off
+          </div>
+          <button onclick="dismissReturnPortal()" class="text-slate-400 hover:text-slate-200 text-xs">Dismiss</button>
+        </div>
+        <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80 mb-3">
+          <p class="text-xs text-slate-400 mb-1 font-medium">Task: <span id="rp-task-title" class="text-slate-200 font-semibold">OMSCS ML Assignment</span></p>
+          <p class="text-xs text-slate-300 mb-1">📍 <strong class="text-slate-400">Where I stopped:</strong> <span id="rp-context">Finished hyperparameter tuning loop in python script.</span></p>
+          <p class="text-xs text-emerald-400">⚡ <strong class="text-slate-400">Next micro-step:</strong> <span id="rp-next">Run test dataset evaluation and export learning curve plot.</span></p>
+        </div>
+        <button onclick="jumpToReturnPortal()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+          <i data-lucide="play" class="w-4 h-4 fill-slate-950"></i> Resume This Context Now
+        </button>
+      </div>
+
+      <!-- Recommended Single Task Card (Daily Mission Limit) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-300 flex items-center gap-2">
+            <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i> Recommended Mission For Your Energy
+          </h3>
+          <span id="home-space-badge" class="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg font-medium">Work</span>
+        </div>
+        <div id="recommended-task-box" class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 mb-4">
+          <p class="text-slate-400 text-xs italic">No active tasks found in this energy tier. Add one below or switch spaces!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: FOCUS IGNITION ENGINE -->
+    <section id="tab-focus" class="tab-content hidden space-y-6 max-w-2xl mx-auto">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 text-center shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-cyan-500"></div>
+        
+        <div class="flex items-center justify-between mb-6">
+          <span id="focus-task-name" class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full font-medium">No Active Task Selected</span>
+          <button onclick="openResistanceResolver()" class="text-xs text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1 rounded-full font-medium transition-all flex items-center gap-1.5">
+            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Stuck? Resolve Resistance
+          </button>
+        </div>
+
+        <!-- Timer Presets -->
+        <div id="timer-setup-view" class="space-y-6">
+          <p class="text-xs text-slate-400">Choose your initiation commitment. Remember: <strong class="text-slate-200">You can stop guilt-free after 2 minutes!</strong></p>
+          <div class="flex justify-center gap-3">
+            <button onclick="startFocusTimer(2)" class="px-5 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-bold text-sm hover:bg-emerald-500/20 transition-all">2 Min Spark</button>
+            <button onclick="startFocusTimer(5)" class="px-5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-300 font-bold text-sm transition-all">5 Min Wave</button>
+            <button onclick="startFocusTimer(15)" class="px-5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-300 font-bold text-sm transition-all">15 Min Deep</button>
+          </div>
+        </div>
+
+        <!-- Active Countdown / Flow Display -->
+        <div id="timer-active-view" class="hidden space-y-6 my-4">
+          <div class="relative w-48 h-48 mx-auto flex items-center justify-center rounded-full border-4 border-emerald-500/30 bg-slate-950 shadow-inner">
+            <div class="text-center">
+              <span id="timer-display" class="text-4xl md:text-5xl font-extrabold text-emerald-400 tracking-tight">02:00</span>
+              <span id="timer-mode-label" class="block text-[10px] text-slate-400 uppercase tracking-widest mt-1">Initiation Phase</span>
+            </div>
+          </div>
+          <div class="flex justify-center gap-3">
+            <button onclick="pauseFocusTimer()" id="pause-timer-btn" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all">Pause</button>
+            <button onclick="stopFocusTimer()" class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition-all">Stop & Save Context</button>
+          </div>
+        </div>
+
+        <!-- Acoustic Shield Controls -->
+        <div class="mt-8 pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="headphones" class="w-4 h-4 text-slate-400"></i>
+            <span class="text-xs font-semibold text-slate-300">Acoustic Shield:</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="toggleAudio('brown')" id="audio-brown" class="px-3 py-1.5 rounded-lg text-xs bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 transition-all">Brown Noise</button>
+            <button onclick="toggleAudio('rain')" id="audio-rain" class="px-3 py-1.5 rounded-lg text-xs bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 transition-all">Soft Rain</button>
+            <button onclick="toggleAudio('cafe')" id="audio-cafe" class="px-3 py-1.5 rounded-lg text-xs bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 transition-all">Cafe Murmur</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distraction Parking Lot -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <h3 class="text-sm font-bold text-slate-200 mb-2 flex items-center gap-2">
+          <i data-lucide="cloud-rain" class="w-4 h-4 text-cyan-400"></i> Distraction Parking Lot
+        </h3>
+        <p class="text-xs text-slate-400 mb-3">Got a random thought or urge? Park it here instantly so your working memory stays clear.</p>
+        <div class="flex gap-2 mb-3">
+          <input type="text" id="parking-input" placeholder="e.g., Reply to WhatsApp message..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500" />
+          <button onclick="parkDistraction()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all">Park It</button>
+        </div>
+        <div id="parking-lot-list" class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: QUESTS & SPACES -->
+    <section id="tab-quests" class="tab-content hidden space-y-6 max-w-3xl mx-auto">
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div class="flex gap-1.5 overflow-x-auto">
+          <button onclick="switchSpace('Work')" class="space-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" data-space="Work">Work</button>
+          <button onclick="switchSpace('OMSCS')" class="space-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-950 text-slate-400 border border-slate-800" data-space="OMSCS">OMSCS</button>
+          <button onclick="switchSpace('Robotics')" class="space-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-950 text-slate-400 border border-slate-800" data-space="Robotics">Robotics</button>
+          <button onclick="switchSpace('Creative')" class="space-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-950 text-slate-400 border border-slate-800" data-space="Creative">Creative</button>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openOMSCSModal()" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+            <i data-lucide="book-open" class="w-3.5 h-3.5"></i> OMSCS Template
+          </button>
+          <button onclick="openNewQuestModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Quest
+          </button>
+        </div>
+      </div>
+
+      <!-- Quest List Container -->
+      <div id="quest-list-container" class="space-y-3">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: REWARD VAULT (DOPAMINE MENU) -->
+    <section id="tab-rewards" class="tab-content hidden space-y-6 max-w-3xl mx-auto">
+      <div class="bg-gradient-to-r from-amber-950/40 to-slate-900 border border-amber-500/30 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-amber-400 mb-1 flex items-center gap-2">
+            <i data-lucide="gift" class="w-5 h-5"></i> Dopamine Menu & Reward Vault
+          </h2>
+          <p class="text-xs text-slate-300">Cash in your hard-earned Spark Coins for pre-committed real-world treats guilt-free!</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-slate-400 block font-medium">Available Balance</span>
+          <span class="text-xl font-extrabold text-amber-400 flex items-center gap-1">
+            <i data-lucide="coins" class="w-5 h-5"></i> <span id="vault-coins">120</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-bold text-slate-200">Your Reward Treats</h3>
+        <button onclick="openAddRewardModal()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Custom Reward
+        </button>
+      </div>
+
+      <div id="rewards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- TAB 5: SPARKBOT WORKSHOP -->
+    <section id="tab-workshop" class="tab-content hidden space-y-6 max-w-3xl mx-auto text-center">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+        <h2 class="text-lg font-bold text-slate-100 mb-1">SparkBot Workshop</h2>
+        <p class="text-xs text-slate-400 mb-6">Complete quests and start focus sessions to earn predictable robot parts and upgrades!</p>
+        
+        <!-- Live SVG SparkBot Display -->
+        <div class="w-48 h-48 mx-auto bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center shadow-inner mb-6 relative">
+          <svg id="sparkbot-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" class="w-36 h-36">
+            <!-- Antenna -->
+            <line x1="100" y1="35" x2="100" y2="60" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="100" cy="27" r="10" fill="#f59e0b" id="bot-antenna-light"/>
+            <!-- Head -->
+            <rect x="55" y="60" width="90" height="70" rx="16" fill="#334155" stroke="#94a3b8" stroke-width="4"/>
+            <!-- Visor -->
+            <rect x="67" y="78" width="66" height="26" rx="8" fill="#0f172a"/>
+            <circle cx="87" cy="91" r="7" fill="#10b981" id="bot-eye-left"/>
+            <circle cx="113" cy="91" r="7" fill="#10b981" id="bot-eye-right"/>
+            <!-- Smile -->
+            <path d="M 85 112 Q 100 122 115 112" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+            <!-- Body Chassis -->
+            <rect x="70" y="135" width="60" height="45" rx="10" fill="#1e293b" stroke="#64748b" stroke-width="4" id="bot-chassis"/>
+            <!-- Core Spark Bolt -->
+            <polygon points="100,145 90,162 104,162 96,177 114,155 102,155" fill="#f59e0b"/>
+          </svg>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-400 block font-medium">Chassis Upgrade</span>
+            <span id="part-chassis" class="text-xs text-emerald-400 font-bold">Titanium Alloy v1</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-400 block font-medium">Visor Optic</span>
+            <span id="part-visor" class="text-xs text-emerald-400 font-bold">Mint HUD Mk.I</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-400 block font-medium">Thruster Core</span>
+            <span id="part-thruster" class="text-xs text-amber-400 font-bold">Standard Ion</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-400 block font-medium">Paint Finish</span>
+            <span id="part-paint" class="text-xs text-cyan-400 font-bold">Obsidian Matte</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: INSIGHTS & BACKUP -->
+    <section id="tab-insights" class="tab-content hidden space-y-6 max-w-2xl mx-auto">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-emerald-400"></i> Data Persistence & JSON Backup
+        </h2>
+        <p class="text-xs text-slate-400">DayQuest stores all tasks, Return Portals, and Spark Coins locally in your browser (IndexedDB). Export a backup JSON anytime or restore if switching devices.</p>
+        <div class="flex gap-3 pt-2">
+          <button onclick="exportJSON()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+            <i data-lucide="download" class="w-4 h-4"></i> Export Backup JSON
+          </button>
+          <label class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i data-lucide="upload" class="w-4 h-4"></i> Import JSON
+            <input type="file" accept=".json" onchange="importJSON(event)" class="hidden" />
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- Resistance Resolver Modal -->
+  <div id="modal-resistance" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-amber-400 flex items-center gap-2">
+          <i data-lucide="help-circle" class="w-5 h-5"></i> Why are you stuck?
+        </h3>
+        <button onclick="closeModal('modal-resistance')" class="text-slate-400 hover:text-slate-200 text-xs">Close</button>
+      </div>
+      <div class="space-y-2">
+        <button onclick="resolveResistance('uncertain')" class="w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all">
+          <strong class="block text-xs text-emerald-400 font-bold">🗺️ I don't know the very next step</strong>
+          <span class="text-[10px] text-slate-400">Action: Break it down into 3 tiny micro-steps.</span>
+        </button>
+        <button onclick="resolveResistance('bored')" class="w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500/50 transition-all">
+          <strong class="block text-xs text-amber-400 font-bold">🥱 It feels tedious / boring</strong>
+          <span class="text-[10px] text-slate-400">Action: Turn on Brown Noise and challenge yourself to beat a 2-minute timer.</span>
+        </button>
+        <button onclick="resolveResistance('overwhelmed')" class="w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-rose-500/50 transition-all">
+          <strong class="block text-xs text-rose-400 font-bold">🌊 It feels too massive</strong>
+          <span class="text-[10px] text-slate-400">Action: Park everything else and focus on just 1 micro-action.</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Quest Modal -->
+  <div id="modal-quest" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-emerald-400 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5"></i> Create New Quest
+        </h3>
+        <button onclick="closeModal('modal-quest')" class="text-slate-400 hover:text-slate-200 text-xs">Close</button>
+      </div>
+      <form onsubmit="handleCreateQuest(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-medium">Task Title</label>
+          <input type="text" id="new-quest-title" required placeholder="What needs to be done?" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1 font-medium">Space</label>
+            <select id="new-quest-space" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="Work">Work</option>
+              <option value="OMSCS">OMSCS</option>
+              <option value="Robotics">Robotics</option>
+              <option value="Creative">Creative</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1 font-medium">Energy Tier</label>
+            <select id="new-quest-tier" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="low">Spark (2-5m)</option>
+              <option value="medium" selected>Side Quest (15m)</option>
+              <option value="high">Boss Battle (45m+)</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all mt-2">Create Quest</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Custom Reward Modal -->
+  <div id="modal-reward" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-amber-400 flex items-center gap-2">
+          <i data-lucide="gift" class="w-5 h-5"></i> Add Dopamine Treat
+        </h3>
+        <button onclick="closeModal('modal-reward')" class="text-slate-400 hover:text-slate-200 text-xs">Close</button>
+      </div>
+      <form onsubmit="handleAddReward(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-medium">Reward Title (e.g., Ice Cream, 30m Genshin)</label>
+          <input type="text" id="new-reward-title" required placeholder="Treat name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-medium">Coin Cost</label>
+          <input type="number" id="new-reward-cost" required value="30" min="5" max="500" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" />
+        </div>
+        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all mt-2">Save Reward</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION CORE -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // App State
+    let state = {
+      coins: 120,
+      activeEnergy: 'medium',
+      activeSpace: 'Work',
+      currentFocusTask: null,
+      timerSeconds: 120,
+      timerInterval: null,
+      timerRunning: false,
+      timerMode: 'initiation', // 'initiation' or 'flow'
+      returnPortal: null,
+      parkingLot: [],
+      quests: [
+        { id: 1, title: 'Review daily production data loads & Databricks logs', space: 'Work', tier: 'medium', done: false },
+        { id: 2, title: 'CS 7641 Machine Learning optimization homework report', space: 'OMSCS', tier: 'high', done: false },
+        { id: 3, title: 'Test air-fried cardamom dessert recipe in Solara air fryer', space: 'Creative', tier: 'low', done: false }
+      ],
+      rewards: [
+        { id: 1, title: '🍦 Ice cream treat', cost: 25 },
+        { id: 2, title: '🎮 30m Genshin Impact session', cost: 40 },
+        { id: 3, title: '🍕 Going out to eat / special dinner', cost: 100 },
+        { id: 4, title: '🍿 Movie night with fiancé', cost: 80 }
+      ]
+    };
+
+    // IndexedDB Wrapper for Persistence
+    const DB_NAME = 'DayQuestDB';
+    const STORE_NAME = 'state';
+    let db = null;
+
+    function initDB() {
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onerror = () => loadFallbackState();
+      request.onsuccess = (e) => {
+        db = e.target.result;
+        loadFromDB();
+      };
+      request.onupgradeneeded = (e) => {
+        db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+    }
+
+    function saveToDB() {
+      if (!db) return;
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.put(state, 'appState');
+    }
+
+    function loadFromDB() {
+      if (!db) return;
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get('appState');
+      req.onsuccess = (e) => {
+        if (e.target.result) {
+          state = e.target.result;
+        }
+        renderAll();
+      };
+    }
+
+    function loadFallbackState() {
+      const saved = localStorage.getItem('dayquest_state');
+      if (saved) {
+        try { state = JSON.parse(saved); } catch(err) {}
+      }
+      renderAll();
+    }
+
+    function persistState() {
+      saveToDB();
+      localStorage.setItem('dayquest_state', JSON.stringify(state));
+      renderAll();
+    }
+
+    // Navigation
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      // Update sidebar nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.className = 'nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+        } else {
+          btn.className = 'nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60';
+        }
+      });
+
+      // Update mobile nav buttons
+      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.className = 'mobile-nav-btn flex flex-col items-center p-2 text-emerald-400';
+        } else {
+          btn.className = 'mobile-nav-btn flex flex-col items-center p-2 text-slate-400';
+        }
+      });
+      window.scrollTo(0,0);
+    }
+
+    // Energy Selector
+    function setEnergy(level) {
+      state.activeEnergy = level;
+      document.querySelectorAll('.energy-btn').forEach(b => {
+        b.className = 'energy-btn py-3 px-4 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800 text-center transition-all';
+      });
+      const activeBtn = level === 'low' ? 'btn-energy-low' : level === 'medium' ? 'btn-energy-med' : 'btn-energy-high';
+      document.getElementById(activeBtn).className = 'energy-btn py-3 px-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-center transition-all';
+      renderHomeRecommendation();
+    }
+
+    // Render Home
+    function renderHomeRecommendation() {
+      document.getElementById('user-coins').innerText = state.coins;
+      document.getElementById('mobile-user-coins').innerText = state.coins;
+      document.getElementById('vault-coins').innerText = state.coins;
+
+      const filtered = state.quests.filter(q => !q.done && q.tier === state.activeEnergy);
+      const box = document.getElementById('recommended-task-box');
+      
+      if (filtered.length === 0) {
+        box.innerHTML = `<p class="text-slate-400 text-xs italic">No active tasks in ${state.activeEnergy} tier. Create one or switch energy!</p>`;
+      } else {
+        const t = filtered[0];
+        box.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">${t.space} • ${t.tier}</span>
+              <h4 class="text-slate-100 font-semibold text-sm mt-0.5">${t.title}</h4>
+            </div>
+            <button onclick="launchFocusTask(${t.id})" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shrink-0">
+              <i data-lucide="play" class="w-3.5 h-3.5 fill-slate-950"></i> Ignite Focus
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+
+      // Return Portal Banner check
+      if (state.returnPortal) {
+        document.getElementById('return-portal-card').classList.remove('hidden');
+        document.getElementById('rp-task-title').innerText = state.returnPortal.title;
+        document.getElementById('rp-context').innerText = state.returnPortal.context;
+        document.getElementById('rp-next').innerText = state.returnPortal.nextStep;
+      } else {
+        document.getElementById('return-portal-card').classList.add('hidden');
+      }
+    }
+
+    function dismissReturnPortal() {
+      state.returnPortal = null;
+      persistState();
+    }
+
+    function jumpToReturnPortal() {
+      if (state.returnPortal) {
+        state.currentFocusTask = state.returnPortal.title;
+        document.getElementById('focus-task-name').innerText = state.returnPortal.title;
+        switchTab('focus');
+      }
+    }
+
+    // Quick Capture
+    function handleQuickCapture(e) {
+      e.preventDefault();
+      const input = document.getElementById('quick-input');
+      if (!input.value.trim()) return;
+      state.quests.unshift({
+        id: Date.now(),
+        title: input.value.trim(),
+        space: state.activeSpace,
+        tier: state.activeEnergy,
+        done: false
+      });
+      input.value = '';
+      persistState();
+      renderAll();
+    }
+
+    // Quests Tab & Spaces
+    function switchSpace(space) {
+      state.activeSpace = space;
+      document.querySelectorAll('.space-filter-btn').forEach(b => {
+        if (b.dataset.space === space) {
+          b.className = 'space-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+        } else {
+          b.className = 'space-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-950 text-slate-400 border border-slate-800';
+        }
+      });
+      renderQuests();
+    }
+
+    function renderQuests() {
+      const container = document.getElementById('quest-list-container');
+      const filtered = state.quests.filter(q => q.space === state.activeSpace);
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">No quests in ${state.activeSpace}. Add your first quest above!</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(q => `
+        <div class="bg-slate-900 border ${q.done ? 'border-slate-800/40 opacity-60' : 'border-slate-800'} rounded-2xl p-4 flex items-center justify-between gap-3 transition-all">
+          <div class="flex items-center gap-3 flex-1">
+            <input type="checkbox" ${q.done ? 'checked' : ''} onchange="toggleQuest(${q.id})" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer" />
+            <div>
+              <h4 class="text-xs font-semibold ${q.done ? 'line-through text-slate-500' : 'text-slate-200'}">${q.title}</h4>
+              <span class="text-[10px] text-slate-400 uppercase">${q.tier} energy</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="launchFocusTaskById(${q.id})" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1">
+              <i data-lucide="play" class="w-3 h-3"></i> Focus
+            </button>
+            <button onclick="deleteQuest(${q.id})" class="text-slate-500 hover:text-rose-400 p-1.5">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function toggleQuest(id) {
+      const q = state.quests.find(item => item.id === id);
+      if (q) {
+        q.done = !q.done;
+        if (q.done) {
+          state.coins += 15;
+          confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+        }
+        persistState();
+      }
+    }
+
+    function deleteQuest(id) {
+      state.quests = state.quests.filter(q => q.id !== id);
+      persistState();
+    }
+
+    function launchFocusTask(id) {
+      const q = state.quests.find(item => item.id === id);
+      if (q) {
+        state.currentFocusTask = q.title;
+        document.getElementById('focus-task-name').innerText = q.title;
+        switchTab('focus');
+      }
+    }
+
+    function launchFocusTaskById(id) {
+      launchFocusTask(id);
+    }
+
+    // Focus Timer & Flow Engine
+    function startFocusTimer(mins) {
+      state.timerSeconds = mins * 60;
+      state.timerRunning = true;
+      state.timerMode = 'initiation';
+      document.getElementById('timer-setup-view').classList.add('hidden');
+      document.getElementById('timer-active-view').classList.remove('hidden');
+      document.getElementById('timer-mode-label').innerText = 'Initiation Phase (Guilt-Free)';
+      
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        if (state.timerSeconds > 0) {
+          state.timerSeconds--;
+          updateTimerDisplay();
+        } else {
+          // Seamless Transition into Uninterrupted Count-up Flow Mode
+          if (state.timerMode === 'initiation') {
+            state.timerMode = 'flow';
+            state.timerSeconds = 0;
+            document.getElementById('timer-mode-label').innerText = '🔥 Hyper-Focus Flow (Uninterrupted)';
+            document.getElementById('timer-display').classList.remove('text-emerald-400');
+            document.getElementById('timer-display').classList.add('text-amber-400');
+          } else {
+            state.timerSeconds++;
+            updateTimerDisplay();
+          }
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      if (state.timerMode === 'initiation') {
+        const m = Math.floor(state.timerSeconds / 60).toString().padStart(2, '0');
+        const s = (state.timerSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('timer-display').innerText = `${m}:${s}`;
+      } else {
+        const m = Math.floor(state.timerSeconds / 60).toString().padStart(2, '0');
+        const s = (state.timerSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('timer-display').innerText = `+${m}:${s}`;
+      }
+    }
+
+    function pauseFocusTimer() {
+      state.timerRunning = !state.timerRunning;
+      if (!state.timerRunning) {
+        clearInterval(state.timerInterval);
+        document.getElementById('pause-timer-btn').innerText = 'Resume';
+      } else {
+        startFocusTimer(Math.ceil(state.timerSeconds / 60));
+        document.getElementById('pause-timer-btn').innerText = 'Pause';
+      }
+    }
+
+    function stopFocusTimer() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerRunning = false;
+      
+      // Save Return Portal checkpoint
+      state.returnPortal = {
+        title: state.currentFocusTask || 'General Work Session',
+        context: 'Paused focus session mid-stream.',
+        nextStep: 'Continue implementation and verify logic.'
+      };
+      state.coins += 20;
+      confetti({ particleCount: 50, spread: 70, origin: { y: 0.7 } });
+      persistState();
+
+      document.getElementById('timer-active-view').classList.add('hidden');
+      document.getElementById('timer-setup-view').classList.remove('hidden');
+      switchTab('home');
+    }
+
+    // Acoustic Shield (Web Audio API synthesis)
+    let audioCtx = null;
+    let audioNode = null;
+    function toggleAudio(type) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioNode) {
+        audioNode.stop();
+        audioNode = null;
+        document.querySelectorAll('[id^="audio-"]').forEach(b => b.className = 'px-3 py-1.5 rounded-lg text-xs bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 transition-all');
+        return;
+      }
+      // Simple Brown Noise generator simulation via buffer
+      const bufferSize = audioCtx.sampleRate * 2;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        data[i] = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = data[i];
+        data[i] *= 3.5; // volume scale
+      }
+      audioNode = audioCtx.createBufferSource();
+      audioNode.buffer = buffer;
+      audioNode.loop = true;
+      audioNode.connect(audioCtx.destination);
+      audioNode.start();
+
+      document.getElementById(`audio-${type}`).className = 'px-3 py-1.5 rounded-lg text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold transition-all';
+    }
+
+    // Distraction Parking Lot
+    function parkDistraction() {
+      const input = document.getElementById('parking-input');
+      if (!input.value.trim()) return;
+      state.parkingLot.push({ id: Date.now(), text: input.value.trim() });
+      input.value = '';
+      persistState();
+      renderParkingLot();
+    }
+
+    function renderParkingLot() {
+      const list = document.getElementById('parking-lot-list');
+      if (state.parkingLot.length === 0) {
+        list.innerHTML = `<span class="text-[10px] text-slate-500 italic">No parked distractions. Working memory is clear!</span>`;
+        return;
+      }
+      list.innerHTML = state.parkingLot.map(item => `
+        <div class="flex items-center justify-between bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 text-xs">
+          <span class="text-slate-300">${item.text}</span>
+          <button onclick="promoteParking(${item.id})" class="text-[10px] text-emerald-400 hover:underline">Promote to Quest</button>
+        </div>
+      `).join('');
+    }
+
+    function promoteParking(id) {
+      const item = state.parkingLot.find(p => p.id === id);
+      if (item) {
+        state.quests.unshift({ id: Date.now(), title: item.text, space: state.activeSpace, tier: 'low', done: false });
+        state.parkingLot = state.parkingLot.filter(p => p.id !== id);
+        persistState();
+        renderParkingLot();
+        renderQuests();
+      }
+    }
+
+    // Reward Vault / Dopamine Menu
+    function renderRewards() {
+      const grid = document.getElementById('rewards-grid');
+      grid.innerHTML = state.rewards.map(r => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <h4 class="text-xs font-semibold text-slate-200 mb-1">${r.title}</h4>
+            <span class="text-xs text-amber-400 font-bold flex items-center gap-1">
+              <i data-lucide="coins" class="w-3.5 h-3.5"></i> ${r.cost} Coins
+            </span>
+          </div>
+          <button onclick="redeemReward(${r.id}, ${r.cost})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-1 shadow-lg shadow-amber-500/20">
+            Redeem
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function redeemReward(id, cost) {
+      if (state.coins >= cost) {
+        state.coins -= cost;
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+        persistState();
+        alert('🎉 Reward Redeemed! Enjoy your guilt-free treat!');
+      } else {
+        alert('⚠️ Not enough Spark Coins yet! Complete more quests or focus sessions.');
+      }
+    }
+
+    function handleAddReward(e) {
+      e.preventDefault();
+      const title = document.getElementById('new-reward-title').value;
+      const cost = parseInt(document.getElementById('new-reward-cost').value);
+      state.rewards.push({ id: Date.now(), title, cost });
+      closeModal('modal-reward');
+      persistState();
+      renderRewards();
+    }
+
+    // Modals
+    function openResistanceResolver() { document.getElementById('modal-resistance').classList.remove('hidden'); }
+    function openNewQuestModal() { document.getElementById('modal-quest').classList.remove('hidden'); }
+    function openAddRewardModal() { document.getElementById('modal-reward').classList.remove('hidden'); }
+    function openOMSCSModal() {
+      if (confirm('Create OMSCS Assignment breakdown (Implementation, Experiments, Analysis, Writing)?')) {
+        state.quests.unshift(
+          { id: Date.now() + 1, title: 'OMSCS: Core Algorithm Implementation', space: 'OMSCS', tier: 'high', done: false },
+          { id: Date.now() + 2, title: 'OMSCS: Run Datasets & Experiments', space: 'OMSCS', tier: 'medium', done: false },
+          { id: Date.now() + 3, title: 'OMSCS: Analyze Performance Results & Curves', space: 'OMSCS', tier: 'medium', done: false },
+          { id: Date.now() + 4, title: 'OMSCS: Write Final Research Report', space: 'OMSCS', tier: 'high', done: false }
+        );
+        persistState();
+        switchTab('quests');
+      }
+    }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function resolveResistance(type) {
+      closeModal('modal-resistance');
+      if (type === 'uncertain') {
+        alert('💡 Tip: Break your current task down into 3 tiny steps on the Quests tab!');
+      } else if (type === 'bored') {
+        alert('🎧 Tip: Turn on Brown Noise in the Focus tab and commit to just 120 seconds!');
+      } else {
+        alert('🌊 Tip: Park everything else in the Distraction Parking Lot and focus on just one micro-action.');
+      }
+    }
+
+    // JSON Backup Export / Import
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "dayquest_backup.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          state = JSON.parse(evt.target.result);
+          persistState();
+          alert('✅ Backup imported successfully!');
+        } catch(err) {
+          alert('❌ Invalid JSON backup file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Initial Render
+    function renderAll() {
+      renderHomeRecommendation();
+      renderQuests();
+      renderRewards();
+      renderParkingLot();
+    }
+
+    // Boot
+    initDB();
+  </script>
+</body>
+</html>
