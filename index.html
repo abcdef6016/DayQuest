@@ -4,21 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DayQuest — Cozy RPG Focus & Flow</title>
+  <link rel="stylesheet" href="ramen.css" />
+  <link rel="stylesheet" href="cottage.css" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="apple-touch-icon" href="icon.png" />
   
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Canvas Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="vendor/tailwind.css" />
+  <script src="vendor/confetti.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+    @font-face {
+      font-family: 'Fredoka';
+      src: url('vendor/fredoka-latin.woff2') format('woff2');
+      font-weight: 500 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Plus Jakarta Sans';
+      src: url('vendor/plus-jakarta-sans-latin.woff2') format('woff2');
+      font-weight: 500 800;
+      font-display: swap;
+    }
     
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -88,7 +97,7 @@
     <div>
       <div class="flex items-center gap-3 px-2 py-2 mb-6">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-400 via-teal-400 to-amber-400 flex items-center justify-center shadow-lg shadow-emerald-500/25 rotate-3">
-          <i data-lucide="sparkles" class="w-6 h-6 text-slate-950 fill-slate-950"></i>
+          <svg viewBox="0 0 24 24" class="w-6 h-6 text-slate-950 fill-slate-950" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2c.7 5 2 6.4 7 7-5 .7-6.3 2-7 7-.8-5-2-6.3-7-7 5-.6 6.2-2 7-7ZM18.5 12c.4 3 1.5 4 4 4.5-2.5.4-3.6 1.4-4 4.5-.5-3.1-1.5-4.1-4-4.5 2.5-.5 3.5-1.5 4-4.5Z"/></svg>
         </div>
         <div>
           <h1 class="font-playful font-bold text-2xl bg-gradient-to-r from-emerald-300 via-teal-200 to-amber-300 bg-clip-text text-transparent">DayQuest</h1>
@@ -98,7 +107,7 @@
 
       <nav class="space-y-2" id="desktop-nav">
         <button onclick="switchTab('home')" class="nav-btn btn-juicy w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all bg-emerald-500/15 text-emerald-300 border-2 border-emerald-500/40" data-tab="home">
-          <span class="text-lg">🏕️</span> Base Camp
+          <span class="text-lg">🏕️</span> Morning Cottage
         </button>
         <button onclick="switchTab('focus')" class="nav-btn btn-juicy w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 border-2 border-transparent" data-tab="focus">
           <span class="text-lg">⚡</span> Focus Arena
@@ -108,6 +117,9 @@
         </button>
         <button onclick="switchTab('rewards')" class="nav-btn btn-juicy w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 border-2 border-transparent" data-tab="rewards">
           <span class="text-lg">🎁</span> Loot & Treats
+        </button>
+        <button onclick="switchTab('ramen')" class="nav-btn btn-juicy w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 border-2 border-transparent" data-tab="ramen">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 10h16q-2 7-8 7t-8-7Zm4-2c-2-3 2-3 0-6m4 6c-2-3 2-3 0-6m4 6c-2-3 2-3 0-6"/></svg> Food Village
         </button>
         <button onclick="switchTab('workshop')" class="nav-btn btn-juicy w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 border-2 border-transparent" data-tab="workshop">
           <span class="text-lg">🤖</span> SparkBot Lab
@@ -141,7 +153,7 @@
   <!-- MOBILE BOTTOM NAVIGATION -->
   <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-lg border-t-2 border-slate-800 z-50 flex justify-around py-2 px-1">
     <button onclick="switchTab('home')" class="mobile-nav-btn flex flex-col items-center p-1.5 rounded-2xl text-emerald-400 bg-emerald-500/10" data-tab="home">
-      <span class="text-lg">🏕️</span><span class="text-[10px] mt-0.5 font-bold">Camp</span>
+      <span class="text-lg">🏕️</span><span class="text-[10px] mt-0.5 font-bold">Cottage</span>
     </button>
     <button onclick="switchTab('focus')" class="mobile-nav-btn flex flex-col items-center p-1.5 rounded-2xl text-slate-400" data-tab="focus">
       <span class="text-lg">⚡</span><span class="text-[10px] mt-0.5 font-bold">Focus</span>
@@ -151,6 +163,9 @@
     </button>
     <button onclick="switchTab('rewards')" class="mobile-nav-btn flex flex-col items-center p-1.5 rounded-2xl text-slate-400" data-tab="rewards">
       <span class="text-lg">🎁</span><span class="text-[10px] mt-0.5 font-bold">Loot</span>
+    </button>
+    <button onclick="switchTab('ramen')" class="mobile-nav-btn flex flex-col items-center p-1.5 rounded-2xl text-slate-400" data-tab="ramen">
+      <svg width="20" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 10h16q-2 7-8 7t-8-7Zm4-2c-2-3 2-3 0-6m4 6c-2-3 2-3 0-6m4 6c-2-3 2-3 0-6"/></svg><span class="text-[10px] mt-0.5 font-bold">Food</span>
     </button>
     <button onclick="switchTab('workshop')" class="mobile-nav-btn flex flex-col items-center p-1.5 rounded-2xl text-slate-400" data-tab="workshop">
       <span class="text-lg">🤖</span><span class="text-[10px] mt-0.5 font-bold">Bot</span>
@@ -167,7 +182,7 @@
     <header class="flex md:hidden items-center justify-between mb-5 bg-slate-900/90 border-2 border-slate-800 rounded-2xl px-4 py-2.5 shadow-lg">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-400 to-amber-400 flex items-center justify-center rotate-3 shadow-md">
-          <i data-lucide="sparkles" class="w-5 h-5 text-slate-950 fill-slate-950"></i>
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-950 fill-slate-950" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2c.7 5 2 6.4 7 7-5 .7-6.3 2-7 7-.8-5-2-6.3-7-7 5-.6 6.2-2 7-7ZM18.5 12c.4 3 1.5 4 4 4.5-2.5.4-3.6 1.4-4 4.5-.5-3.1-1.5-4.1-4-4.5 2.5-.5 3.5-1.5 4-4.5Z"/></svg>
         </div>
         <div>
           <span class="font-playful font-bold text-lg bg-gradient-to-r from-emerald-300 to-amber-300 bg-clip-text text-transparent block leading-none">DayQuest</span>
@@ -183,8 +198,16 @@
     </header>
 
     <!-- TAB 1: HOME (BASE CAMP) -->
+    <section id="tab-ramen" class="tab-content hidden" aria-label="Food Village">
+      <nav id="village-nav" aria-label="Food Village shops"></nav>
+      <div id="ramen-bar"></div>
+      <div id="village-shop" hidden></div>
+    </section>
+    <section id="tab-notebook" class="tab-content hidden" aria-label="Personal notebook"></section>
     <section id="tab-home" class="tab-content space-y-6 max-w-3xl mx-auto animate-pop">
       
+      <div id="morning-cottage"></div>
+
       <!-- Interactive SparkBot Companion Card -->
       <div class="bg-gradient-to-r from-indigo-950/80 via-slate-900 to-emerald-950/60 border-2 border-indigo-500/30 rounded-3xl p-4 md:p-5 shadow-xl flex items-center gap-4">
         <button onclick="petSparkBot()" id="companion-avatar" class="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-slate-950 border-2 border-emerald-400/50 flex items-center justify-center shrink-0 shadow-lg animate-float cursor-pointer hover:scale-105 transition-transform" title="Tap me for encouragement!">
@@ -238,7 +261,7 @@
         <form onsubmit="handleQuickCapture(event)" class="flex gap-2.5">
           <input type="text" id="quick-input" placeholder="✨ Toss a quick quest into your bag..." class="flex-1 bg-slate-950 border-2 border-slate-800 rounded-2xl px-4 py-3 text-sm font-medium text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-all" />
           <button type="submit" class="btn-juicy shadow-juicy-emerald bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold px-5 py-3 rounded-2xl text-sm transition-all flex items-center gap-1.5 shrink-0">
-            <i data-lucide="plus" class="w-4 h-4 stroke-[3]"></i> Add
+            <svg viewBox="0 0 24 24" class="w-4 h-4 stroke-[3]" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Add
           </button>
         </form>
       </div>
@@ -391,6 +414,15 @@
       </div>
 
       <div id="rewards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      <section class="integration-card" aria-labelledby="collection-title">
+        <h3 id="collection-title">Collection stamps</h3>
+        <p id="collection-summary">Opening your collections?</p>
+        <ul id="collection-stamps"></ul>
+        <div class="integration-actions">
+          <button type="button" id="collection-scrapbook">Recipe Scrapbook</button>
+          <button type="button" id="collection-cottage">Morning Cottage</button>
+        </div>
+      </section>
     </section>
 
     <!-- TAB 5: SPARKBOT WORKSHOP -->
@@ -449,17 +481,23 @@
         <h2 class="font-playful text-xl font-bold text-slate-100 flex items-center gap-2">
           <span>💾</span> Save Crystal & Data Backup
         </h2>
-        <p class="text-xs text-slate-300 leading-relaxed">Your quests, coins, XP, and treats are safely stored offline on your device. Export a Save Crystal (JSON file) anytime to back up your progress!</p>
+        <p class="text-xs text-slate-300 leading-relaxed">Save a JSON copy of your quests, Notebook, rewards, kitchen progress, recipes, and Cottage settings.</p>
         <div class="flex gap-3 pt-2">
-          <button onclick="exportJSON()" class="btn-juicy shadow-juicy-emerald flex-1 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold py-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-2">
+          <button id="save-crystal-download" onclick="exportJSON()" class="btn-juicy shadow-juicy-emerald flex-1 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold py-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-2">
             <span>⬇️</span> Download Save File
           </button>
-          <label class="btn-juicy shadow-juicy-slate flex-1 bg-slate-800 hover:bg-slate-700 text-slate-100 font-extrabold py-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <label class="save-file-label btn-juicy shadow-juicy-slate flex-1 bg-slate-800 hover:bg-slate-700 text-slate-100 font-extrabold py-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
             <span>⬆️</span> Load Save File
-            <input type="file" accept=".json" onchange="importJSON(event)" class="hidden" />
+            <input type="file" id="save-crystal-file" accept=".json,application/json" onchange="importJSON(event)" class="sr-only" />
           </label>
         </div>
+        <p id="save-crystal-status" class="text-sm text-slate-200" role="status"></p>
       </div>
+      <section class="integration-card" aria-labelledby="settings-title">
+        <h3 id="settings-title">Settings</h3>
+        <label><input type="checkbox" id="setting-sound"> Sound effects</label>
+        <label><input type="checkbox" id="setting-visits"> Allow Cottage surprise visits</label>
+      </section>
     </section>
 
   </main>
@@ -551,13 +589,12 @@
 
   <!-- JAVASCRIPT APPLICATION CORE -->
   <script>
-    lucide.createIcons();
 
-    let sfxEnabled = true;
     let state = {
       coins: 120,
       xp: 40,
       level: 1,
+      sfxEnabled: true,
       botColor: '#10b981',
       activeEnergy: 'medium',
       activeSpace: 'Work',
@@ -568,6 +605,7 @@
       timerMode: 'initiation',
       returnPortal: null,
       parkingLot: [],
+      notebookNotes: [],
       quests: [
         { id: 1, title: 'Review daily production data loads & Databricks logs', space: 'Work', tier: 'medium', done: false },
         { id: 2, title: 'CS 7641 Machine Learning optimization report', space: 'OMSCS', tier: 'high', done: false },
@@ -591,7 +629,7 @@
 
     // Playful Web Audio Sound Effects (No external MP3s needed!)
     function playSFX(type) {
-      if (!sfxEnabled) return;
+      if (!state.sfxEnabled) return;
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
@@ -630,14 +668,22 @@
       } catch(e) {}
     }
 
+    function renderSoundSettings() {
+      const enabled = state.sfxEnabled;
+      document.getElementById('sfx-toggle-desktop').innerText = enabled ? '\u{1F50A} SFX: ON' : '\u{1F507} SFX: OFF';
+      const mobile = document.getElementById('sfx-toggle-mobile');
+      mobile.innerText = enabled ? '\u{1F50A}' : '\u{1F507}';
+      mobile.setAttribute('aria-label', enabled ? 'Mute sound effects' : 'Enable sound effects');
+    }
+
+    async function setSoundEffects(enabled) {
+      state.sfxEnabled = enabled;
+      if (enabled) playSFX('pop');
+      return persistState();
+    }
+
     function toggleSoundEffects() {
-      sfxEnabled = !sfxEnabled;
-      const label = sfxEnabled ? '🔊 SFX: ON' : '🔇 SFX: OFF';
-      const deskBtn = document.getElementById('sfx-toggle-desktop');
-      const mobBtn = document.getElementById('sfx-toggle-mobile');
-      if (deskBtn) deskBtn.innerText = label;
-      if (mobBtn) mobBtn.innerText = sfxEnabled ? '🔊' : '🔇';
-      if (sfxEnabled) playSFX('pop');
+      setSoundEffects(!state.sfxEnabled);
     }
 
     function petSparkBot() {
@@ -663,7 +709,7 @@
       while (state.xp >= 100) {
         state.xp -= 100;
         state.level += 1;
-        confetti({ particleCount: 90, spread: 90, origin: { y: 0.6 } });
+        window.confetti?.({ particleCount: 90, spread: 90, origin: { y: 0.6 } });
       }
     }
 
@@ -671,9 +717,17 @@
     const DB_NAME = 'DayQuestDB';
     const STORE_NAME = 'state';
     let db = null;
+    let markStateReady;
+    const stateReady = new Promise(resolve => { markStateReady = resolve; });
 
     function initDB() {
-      const request = indexedDB.open(DB_NAME, 1);
+      let request;
+      try {
+        request = indexedDB.open(DB_NAME, 1);
+      } catch {
+        loadFallbackState();
+        return;
+      }
       request.onerror = () => loadFallbackState();
       request.onsuccess = (e) => {
         db = e.target.result;
@@ -688,9 +742,17 @@
     }
 
     function saveToDB() {
-      if (!db) return;
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(state, 'appState');
+      if (!db) return Promise.resolve(false);
+      return new Promise(resolve => {
+        try {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.oncomplete = () => resolve(true);
+          tx.onabort = () => resolve(false);
+          tx.objectStore(STORE_NAME).put(state, 'appState');
+        } catch {
+          resolve(false);
+        }
+      });
     }
 
     function loadFromDB() {
@@ -698,24 +760,88 @@
       const tx = db.transaction(STORE_NAME, 'readonly');
       const req = tx.objectStore(STORE_NAME).get('appState');
       req.onsuccess = (e) => {
-        if (e.target.result) state = { ...state, ...e.target.result };
+        if (!e.target.result) {
+          loadFallbackState();
+          return;
+        }
+        state = { ...state, ...e.target.result };
+        markStateReady();
         renderAll();
+      };
+      req.onerror = () => {
+        db.close();
+        db = null;
+        loadFallbackState();
       };
     }
 
     function loadFallbackState() {
-      const saved = localStorage.getItem('dayquest_state');
-      if (saved) {
-        try { state = { ...state, ...JSON.parse(saved) }; } catch(err) {}
-      }
+      try {
+        const saved = localStorage.getItem('dayquest_state');
+        if (saved) state = { ...state, ...JSON.parse(saved) };
+      } catch {}
+      markStateReady();
       renderAll();
     }
 
     function persistState() {
-      saveToDB();
-      localStorage.setItem('dayquest_state', JSON.stringify(state));
+      const usesDatabase = Boolean(db);
+      const primary = saveToDB();
+      const fallback = saveLocalState();
       renderAll();
+      return primary.then(saved => usesDatabase ? saved : fallback);
     }
+
+    function saveLocalState() {
+      try {
+        localStorage.setItem('dayquest_state', JSON.stringify(state));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    const notebookNotes = () => Array.isArray(state.notebookNotes) ? state.notebookNotes : [];
+    window.dayQuestHome = {
+      ready: stateReady,
+      navigate: switchTab,
+      focusActive: () => !document.getElementById('timer-active-view').classList.contains('hidden'),
+      notes: notebookNotes,
+      soundEnabled: () => state.sfxEnabled,
+      setSound: setSoundEffects,
+      productivitySnapshot: () => structuredClone(state),
+      async restoreProductivity(incoming) {
+        await stateReady;
+        const previous = state;
+        const notes = new Map(notebookNotes().map(note => [note.id, note]));
+        for (const note of incoming.notebookNotes ?? []) {
+          const existing = notes.get(note.id);
+          if (!existing || existing.updated < note.updated) notes.set(note.id, note);
+        }
+        const restored = { ...state, ...incoming, notebookNotes: [...notes.values()] };
+        state = restored;
+        const saved = await persistState();
+        if (!saved && state === restored) {
+          state = previous;
+          saveLocalState();
+          renderAll();
+        }
+        return saved;
+      },
+      async updateNotes(update) {
+        await stateReady;
+        const previous = notebookNotes();
+        const next = update(previous);
+        state.notebookNotes = next;
+        const saved = await persistState();
+        if (!saved && state.notebookNotes === next) {
+          state.notebookNotes = previous;
+          saveLocalState();
+          renderAll();
+        }
+        return saved;
+      }
+    };
 
     // Navigation
     function switchTab(tabId) {
@@ -739,6 +865,7 @@
         }
       });
       window.scrollTo(0,0);
+      document.dispatchEvent(new Event('dayquest:navigation'));
     }
 
     // Energy Selector
@@ -784,8 +911,8 @@
         box.innerHTML = `
           <div class="flex items-center justify-between gap-3">
             <div>
-              <span class="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wider">${t.space} • ${t.tier} mana</span>
-              <h4 class="text-slate-100 font-bold text-sm mt-0.5">${t.title}</h4>
+              <span class="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wider">${escapeText(t.space)} • ${escapeText(t.tier)} mana</span>
+              <h4 class="text-slate-100 font-bold text-sm mt-0.5">${escapeText(t.title)}</h4>
             </div>
             <button onclick="launchFocusTask(${t.id})" class="btn-juicy shadow-juicy-emerald bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center gap-1.5 shrink-0">
               <span>⚡</span> Ignite
@@ -864,7 +991,7 @@
       const filtered = state.quests.filter(q => q.space === state.activeSpace);
       
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 bg-slate-900/60 border-2 border-dashed border-slate-800 rounded-3xl text-slate-400 text-xs font-medium">✨ No quests posted in ${state.activeSpace} yet!</div>`;
+        container.innerHTML = `<div class="text-center py-10 bg-slate-900/60 border-2 border-dashed border-slate-800 rounded-3xl text-slate-400 text-xs font-medium">✨ No quests posted in ${escapeText(state.activeSpace)} yet!</div>`;
         return;
       }
 
@@ -873,7 +1000,7 @@
           <div class="flex items-center gap-3.5 flex-1">
             <input type="checkbox" ${q.done ? 'checked' : ''} onchange="toggleQuest(${q.id})" class="w-5 h-5 rounded-lg border-2 border-slate-700 accent-emerald-400 cursor-pointer" />
             <div>
-              <h4 class="text-sm font-bold ${q.done ? 'line-through text-slate-500' : 'text-slate-100'}">${q.title}</h4>
+              <h4 class="text-sm font-bold ${q.done ? 'line-through text-slate-500' : 'text-slate-100'}">${escapeText(q.title)}</h4>
               <span class="text-[11px] font-semibold text-slate-400 uppercase">${q.tier === 'low' ? '🦥 Spark' : q.tier === 'medium' ? '🦊 Cozy Flow' : '🐉 Boss Raid'}</span>
             </div>
           </div>
@@ -881,14 +1008,13 @@
             <button onclick="launchFocusTask(${q.id})" class="btn-juicy bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all">
               ⚡ Play
             </button>
-            <button onclick="deleteQuest(${q.id})" class="text-slate-500 hover:text-rose-400 p-2 rounded-xl">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <button onclick="deleteQuest(${q.id})" aria-label="Delete quest" class="text-slate-500 hover:text-rose-400 p-2 rounded-xl">
+              <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16m-10 4v6m4-6v6M9 7V4h6v3m3 0-1 13H7L6 7"/></svg>
             </button>
           </div>
         </div>
       `).join('');
-      lucide.createIcons();
-    }
+      }
 
     function toggleQuest(id) {
       const q = state.quests.find(item => item.id === id);
@@ -898,7 +1024,7 @@
           state.coins += 15;
           addXP(25);
           playSFX('fanfare');
-          confetti({ particleCount: 55, spread: 70, origin: { y: 0.75 } });
+          window.confetti?.({ particleCount: 55, spread: 70, origin: { y: 0.75 } });
         }
         persistState();
       }
@@ -926,6 +1052,7 @@
       state.timerMode = 'initiation';
       document.getElementById('timer-setup-view').classList.add('hidden');
       document.getElementById('timer-active-view').classList.remove('hidden');
+      document.dispatchEvent(new Event('dayquest:focus'));
       document.getElementById('timer-mode-label').innerText = '⚡ Spark Ignition';
       updateTimerDisplay();
       
@@ -977,7 +1104,7 @@
       state.coins += 20;
       addXP(30);
       playSFX('fanfare');
-      confetti({ particleCount: 65, spread: 80, origin: { y: 0.7 } });
+      window.confetti?.({ particleCount: 65, spread: 80, origin: { y: 0.7 } });
       persistState();
 
       document.getElementById('timer-active-view').classList.add('hidden');
@@ -1035,7 +1162,7 @@
       }
       list.innerHTML = state.parkingLot.map(item => `
         <div class="flex items-center justify-between bg-slate-950 px-3.5 py-2.5 rounded-2xl border border-slate-800 text-xs">
-          <span class="text-slate-200 font-medium">🫧 ${item.text}</span>
+          <span class="text-slate-200 font-medium">🫧 ${escapeText(item.text)}</span>
           <button onclick="promoteParking(${item.id})" class="text-[11px] font-bold text-emerald-400 hover:underline">Make Quest ✨</button>
         </div>
       `).join('');
@@ -1052,39 +1179,61 @@
     }
 
     // Rewards
+    function escapeText(value) {
+      const node = document.createElement('span');
+      node.textContent = value;
+      return node.innerHTML;
+    }
+
+    let rewardPending = false;
     function renderRewards() {
       const grid = document.getElementById('rewards-grid');
       grid.innerHTML = state.rewards.map(r => `
         <div class="bg-slate-900/90 border-2 border-slate-800 hover:border-amber-500/40 rounded-3xl p-4 flex items-center justify-between gap-3 transition-all shadow-md">
           <div>
-            <h4 class="text-sm font-bold text-slate-100 mb-1">${r.title}</h4>
+            <h4 class="text-sm font-bold text-slate-100 mb-1">${escapeText(r.title)}</h4>
             <span class="text-xs text-amber-300 font-extrabold inline-flex items-center gap-1 bg-amber-500/10 px-2.5 py-0.5 rounded-lg">
               🪙 ${r.cost} Coins
             </span>
           </div>
-          <button onclick="redeemReward(${r.id}, ${r.cost})" class="btn-juicy shadow-juicy-amber bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-4 py-2.5 rounded-2xl text-xs transition-all">
+          <button onclick="redeemReward(${r.id})" class="btn-juicy shadow-juicy-amber bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-4 py-2.5 rounded-2xl text-xs transition-all">
             Claim 🎁
           </button>
         </div>
       `).join('');
     }
 
-    function redeemReward(id, cost) {
-      if (state.coins >= cost) {
-        state.coins -= cost;
+    async function redeemReward(id) {
+      if (rewardPending) return;
+      const reward = state.rewards.find(item => item.id === id);
+      if (!reward || !Number.isSafeInteger(reward.cost) || reward.cost <= 0) return;
+      if (state.coins < reward.cost) {
+        alert('\u{1FA99} Keep going! Complete a quest or 2-minute focus spark to earn more coins.');
+        return;
+      }
+      rewardPending = true;
+      state.coins -= reward.cost;
+      try {
+        if (!(await persistState())) {
+          state.coins += reward.cost;
+          saveLocalState();
+          renderAll();
+          alert('The treat could not be claimed. Try again.');
+          return;
+        }
         playSFX('fanfare');
-        confetti({ particleCount: 110, spread: 85, origin: { y: 0.6 } });
-        persistState();
-        alert('🎉 Treat Unlocked! Go enjoy your guilt-free reward!');
-      } else {
-        alert('🪙 Keep going! Complete a quest or 2-minute focus spark to earn more coins.');
+        window.confetti?.({ particleCount: 110, spread: 85, origin: { y: 0.6 } });
+        alert('\u{1F389} Treat Unlocked! Go enjoy your guilt-free reward!');
+      } finally {
+        rewardPending = false;
       }
     }
 
     function handleAddReward(e) {
       e.preventDefault();
-      const title = document.getElementById('new-reward-title').value;
-      const cost = parseInt(document.getElementById('new-reward-cost').value);
+      const title = document.getElementById('new-reward-title').value.trim();
+      const cost = Number(document.getElementById('new-reward-cost').value);
+      if (!title || !Number.isSafeInteger(cost) || cost < 5 || cost > 500) return;
       playSFX('pop');
       state.rewards.push({ id: Date.now(), title, cost });
       document.getElementById('new-reward-title').value = '';
@@ -1125,40 +1274,28 @@
     }
 
     function exportJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-      const a = document.createElement('a');
-      a.setAttribute("href", dataStr);
-      a.setAttribute("download", "dayquest_save_crystal.json");
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      return import('./integration.mjs').then(module => module.downloadCrystal());
     }
 
-    function importJSON(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          state = { ...state, ...JSON.parse(evt.target.result) };
-          playSFX('fanfare');
-          persistState();
-          alert('✅ Save Crystal loaded!');
-        } catch(err) {
-          alert('❌ Invalid Save Crystal file.');
-        }
-      };
-      reader.readAsText(file);
+    function importJSON(event) {
+      const input = event.target;
+      return import('./integration.mjs').then(module => module.importCrystal(input));
     }
 
     function renderAll() {
+      renderSoundSettings();
       renderHomeRecommendation();
       renderQuests();
       renderRewards();
       renderParkingLot();
+      document.dispatchEvent(new Event('dayquest:state'));
     }
 
     initDB();
   </script>
+  <script type="module" src="village.mjs"></script>
+  <script type="module" src="cottage.mjs"></script>
+  <script type="module" src="notebook.mjs"></script>
+  <script type="module" src="integration.mjs"></script>
 </body>
 </html>
